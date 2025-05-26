@@ -75,6 +75,7 @@
                     <!-- Link to edit user -->
 <!--                    <a th:href="@{/admin/edit-menu(id=${user.userId})}" class="btn btn-success">Edit</a>-->
                     <!-- Link to delete user -->
+                    <a th:href="@{/admin/hide-comment(commentId=${comment.commentId})}" class="btn btn-warning">Hide</a>
                     <a th:href="@{/comment-view/{id}(id=${comment.commentId})}" class="btn btn-success">View</a> <a th:href="@{/delete-comment(id=${comment.commentId})}" class="btn btn-danger">Delete</a>
                 </td>
             </tr>

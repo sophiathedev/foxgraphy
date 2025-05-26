@@ -23,6 +23,7 @@ public class Comment {
     @NotEmpty
     private String content;
     private Timestamp time;
+    private boolean hidden;
 
     public Comment(){
         this.parentComment=0;
@@ -107,5 +108,13 @@ public class Comment {
 
     public void setTime(Timestamp time) {
         this.time = time;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+
+    public boolean getHidden() {
+        return this.hidden;
     }
 }

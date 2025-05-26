@@ -53,9 +53,9 @@ public class CommentDAO {
             cmt.setParentComment(rs.getInt("parentComment"));
             cmt.setPostId(rs.getInt("postId"));
             cmt.setUsername(rs.getString("username"));
-
             cmt.setContent(rs.getString("content"));
             cmt.setTime(rs.getTimestamp("time"));
+            cmt.setHidden(rs.getBoolean("hidden"));
             cmts.add(cmt);
         }
         return cmts;
@@ -105,7 +105,7 @@ public class CommentDAO {
             cmt.setContent(rs.getString("content"));
             cmt.setUserId(rs.getInt("userId"));
             cmt.setTime(rs.getTimestamp("time"));
-
+            cmt.setHidden(rs.getBoolean("hidden"));
             cmts.add(cmt);
         }
         return cmts;
@@ -125,10 +125,20 @@ public class CommentDAO {
                 cmt.setUsername(rs.getString("username"));
                 cmt.setContent(rs.getString("content"));
                 cmt.setTime(rs.getTimestamp("time"));
+                cmt.setHidden(rs.getBoolean("hidden"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return cmt;
+    }
+    private final String HIDE_COMMENT = "UPDATE comment SET hidden = true WHERE commentId = ?";
+    
+    public void hideCommentById(int id) throws SQLException {
+        Connection connection = getConnection();
+        PreparedStatement ps = connection.prepareStatement(HIDE_COMMENT);
+        ps.setInt(1, id);
+        ps.executeUpdate();
+        ps.close();
     }
 }

@@ -48,8 +48,8 @@ CREATE TABLE user(
                      password varchar(100),
                      gender VARCHAR(10),
                      avatar varchar(255),
-                     role varchar(50)
-
+                     role varchar(50),
+                     hidden BOOLEAN DEFAULT FALSE
 );
 CREATE Table follow(
                        followId int AUTO_INCREMENT primary key,
