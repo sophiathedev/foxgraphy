@@ -5,13 +5,19 @@ import com.example.demo.Model.Comment;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.SQLException;
 
 @RestController
 public class CommentController1 {
     private static int cnt =0;
-    private final CommentDAO commentDAO = new CommentDAO();
+    private final CommentDAO commentDAO;
+
+    @Autowired
+    public CommentController1(CommentDAO commentDAO) {
+        this.commentDAO = commentDAO;
+    }
     @PostMapping("/createCmt")
     public String createCmt(@RequestBody Comment cmt) throws SQLException {
 //        System.out.println("hello"+cmt.getContent());
