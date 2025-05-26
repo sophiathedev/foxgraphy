@@ -1,0 +1,168 @@
+body{
+    margin: 0;
+    padding:0;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    font-size:12px;
+}
+.info{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 80vw;
+    margin-left: 10vw;
+    height: 20vh;
+    .left{
+        margin-left: 30px;
+        display: flex;
+        flex-direction: row;
+        gap:15px;
+        img{
+            width: 70px;
+            height: 70px;
+            border-radius: 100%;
+        }
+        .text{
+            .name{
+                display: flex;
+                flex-direction: row;
+                gap:10px;
+                align-items: center;
+                p{
+                    margin: 10px 0;
+                    font-size: 1.5em;
+                }
+                button{
+                    padding: 0 12px;
+                    border-radius: 10px;
+                    height: 30px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: pointer;
+                }
+            }
+            .follow{
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap:5px;
+                span{
+                    font-size: 1.45em;
+                }
+                img{
+                    height: 15px;
+                    width: 15px;
+                    border-radius: 0;
+                }
+            }
+
+        }
+    }
+    .right{
+        margin:0;
+        margin-right: 30px;
+        padding: 12px 10px;
+        border: 1px red solid;
+        border-radius: 10px;
+        h3{
+            margin: 0;
+        }
+    }
+}
+.nav{
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    padding: 0;
+    width: 80vw;
+    margin-left: 10vw;
+    border-bottom: 1px solid #b5b5b5;
+    border-top:1px solid #b5b5b5;
+    gap:15px;
+    li{
+        display: flex;
+        width: fit-content;
+        padding-left: 15px;
+        padding-right: 15px;
+        font-size: 1.5em;
+        height: 40px;
+        align-items: center;
+        cursor: pointer;
+        a{
+            color: black;
+            text-decoration: none;
+        }
+    }
+}
+.main{
+    padding:0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    width: 80vw;
+    margin-left: 10vw;
+    box-sizing: border-box;
+    padding-left: 10px;
+    height: 55vh;
+    overflow-y: scroll;
+    li{
+        padding-bottom: 5px;
+        border-bottom: 1px solid rgb(150,150,150);
+        a{
+            color:black;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            gap:7px;
+            h2{
+                margin:0;
+            }
+            p{
+                margin: 0;
+                color:#CACACB;
+            }
+            .tags{
+                display: flex;
+                list-style: none;
+                padding:0;
+                gap: 8px;
+                li{
+                    display: flex;
+                    flex-direction: row;
+                    gap:10px;
+                    padding:7px 7px;
+                    background-color: rgba(230,230,230,0.9);
+                    font-size: 1.1em;
+                    border-bottom: none;
+                }
+            }
+            .archive{
+                display: flex;
+                list-style: none;
+                padding:0;
+                gap: 8px;
+                li{
+                    display: flex;
+                    flex-direction: row;
+                    border-bottom: none;
+                    img{
+                        height: 15px;
+                        width: 15px;
+                    }
+                    span{
+                        font-size: 1.2em;
+                        margin-left: 5px;
+                    }
+                }
+            }
+        }
+    }
+
+}
+.main::-webkit-scrollbar{
+    display: none;
+
+}

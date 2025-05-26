@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+
+ <div th:replace="~{admin/fragments/header :: header}"></div>
+  <!-- =============================================== -->
+
+  <!-- Left side column. contains the sidebar -->
+  <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+  <!-- =============================================== -->
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>
+        Manage Comments
+       
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Admin</a></li>
+        <li class="active">Comments</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+      <section class="content" style="background-color: white;overflow-y: scroll;height: 75vh" >
+
+      <!-- Default box -->
+      <div class="col-xs-12">
+        <div class="box">
+          <div class="box-header">
+
+            
+            <div class="box-tools">
+              <form action="/admin_comment/search" method="get" class="input-group input-group-sm" style="width: 150px;">
+                <input type="text" name="table_search" id="search" class="form-control pull-right" placeholder="Search">
+
+                <div class="input-group-btn">
+                  <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- /.box-header -->
+
+          <div class="box-body table-responsive no-padding">
+    <table class="table table-hover" style="overflow: hidden">
+        <thead>
+            <tr>
+                <th>Comment ID</th> <!-- commentId -->
+                <th>Parent Comment ID</th> <!-- parentCommentId (if comments are nested) -->
+                <th>Post ID</th> <!-- postId (indicating which post the comment belongs to) -->
+                <th>Username</th> <!-- username (user who commented) -->
+                <!-- <th>Content</th> content (truncated if long) -->
+                <th>Time Posted</th> <!-- timeUp (timestamp when the comment was created) -->
+                <th>Action</th> <!-- Edit/Delete actions -->
+            </tr>
+        </thead>
+        <tbody style="overflow: scroll">
+            <!-- Iterate over the list of comments -->
+            <tr th:each="comment : ${comments}">
+                <td th:text="${comment.commentId}">Comment ID</td> <!-- Comment ID -->
+                <td th:text="${comment.parentComment}">Parent Comment ID</td> <!-- Parent Comment ID -->
+                <td th:text="${comment.postId}">Post ID</td> <!-- Post ID -->
+                <td th:text="${comment.username}">Username</td> <!-- Username -->
+                <!-- Truncate the content if it's too long (e.g., more than 100 characters) -->
+                <!-- <td th:text="${comment.content.length() > 100 ? comment.content.substring(0, 100) + '...' : comment.content}"> Content </td>  Comment Content -->
+                <td th:text="${comment.time}">Time Posted</td> <!-- Time Posted -->
+                <td>
+                    <!-- Link to edit user -->
+<!--                    <a th:href="@{/admin/edit-menu(id=${user.userId})}" class="btn btn-success">Edit</a>-->
+                    <!-- Link to delete user -->
+                    <a th:href="@{/comment-view/{id}(id=${comment.commentId})}" class="btn btn-success">View</a> <a th:href="@{/delete-comment(id=${comment.commentId})}" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+          <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+      </div>
+      <!-- /.box -->
+
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <footer class="main-footer">
+    
+  </footer>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery 3 -->
+<div th:replace="~{admin/fragments/script :: script}"></div>
+<script>
+    const search = document.getElementById("search");
+    console.log(search.value)
+    search.addEventListener('keydown', (event) =>{
+        if(event.key=== "Enter"){
+            let keyword =search.value;
+            console.log("hello world",keyword)
+            if(keyword) {
+                fetch(`/admin_comment/search?table_search=${encodeURIComponent(keyword)}`)
+            }
+        }
+    })
+</script>
+</body>
+</html>

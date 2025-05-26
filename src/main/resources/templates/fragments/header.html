@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+        function connect() {
+            var socket = new SockJS('/gs-guide-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/notifications', function (notification) {
+                    showNotification(JSON.parse(notification.body));
+                });
+            });
+        }
+        function showNotification(notice) {
+            let check= [[${userId}]];
+            const notification= document.getElementById('notification');
+            console.log(check,notice['userId'], check === notice['userId'])
+
+            if( check === notice['userId']) {
+                notification.src='../file/notification2.png';
+            }
+        }
+        window.onload = function() {
+            connect();
+        };
+    </script>
+    <style>
+        .header{
+            background-color: black;
+            min-height: 60px;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5vw;
+            box-sizing: border-box;
+            ul{
+                display: flex;
+                height: 60px;
+                flex-direction: row;
+                list-style: none;
+                gap:25px;
+                padding: 0;
+                margin:0;
+                li{
+                    height: 100%;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    a{
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        color:white;
+                        text-decoration: none;
+                        h2{
+                            display: flex;
+                            align-items: center;
+                            font-size: 1.8em;
+                            margin-left: 30px;
+                            margin-top:0;
+                            margin-bottom: 0;
+                        }
+                        img{
+                            width: 55px;
+                        }
+                    }
+                }
+            }
+            .left{
+                justify-content: flex-start;
+            }
+            .right{
+                justify-content: flex-end;
+                .find{
+                    display: flex;
+                    align-items: center;
+                    background-color: white;
+                    height: 25px;
+                    object-fit: cover;
+                    border-radius: 5px;
+                    overflow: hidden;
+
+                    img{
+                        height: 25px;
+                        width: 25px;
+                        display: flex;
+                        justify-content: flex-end;
+                    }
+                }
+                .icon{
+                    height: 20px;
+                    width: 20px;
+                    cursor: pointer;
+                }
+            }
+            input{
+                height: 22px;
+                width: 15vw;
+                outline: none;
+                border: none;
+                margin-left: 10px;
+            }
+            #avatar{
+                width: 30px;
+                height: 30px;
+                border-radius: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="header" class="header">
+        <ul>
+            <li><img style="width: 70px" th:src="@{/file/logo.png} " alt=""></li>
+            <li><a href="/post/latest"><h2>Post</h2></a></li>
+            <li><a href="/question/latest"><h2>Question</h2></a></li>
+        </ul>
+        <ul class="right">
+            <li>
+                <form action="/search" method="get" class="find">
+                    <input id="search" type="text" name="keyword" placeholder="Search in FoxGraphy" required>
+                    <img th:src="@{/file/searchIcon.png}" alt="">
+                </form>
+            </li>
+            <li><a th:href="'/notifications/'+${userId}"><img class="icon" id="notification" th:src="${stateNotice} ? @{/file/notification2.png} : @{/file/notificationIcon.png}" alt=""></a></li>
+            <li><a href="/create"><img class="icon"  th:src="@{/file/writeBlog.png}" alt=""></a></li>
+            <li><a href="/My_Profile/userInfo"><img class="icon" id="avatar" th:src="@{/image/{filename}(filename=${avatarUser})}" alt=""></a></li>
+        </ul>
+    </div>
+    <script>
+        const search = document.getElementById("search");
+        search.addEventListener('keydown', (event) =>{
+            if(event.key=== "Enter"){
+                let keyword =search.value;
+                if(keyword) {
+                    fetch(`/search?keyword=${encodeURIComponent(keyword)}`)
+                }
+            }
+        })
+    </script>
+    <script>
+        const notification= document.getElementById('notification');
+        notification.addEventListener('click',(event) => {
+            notification.src="/file/notificationIcon.png";
+        });
+    </script>
+
+</body>
+</html>

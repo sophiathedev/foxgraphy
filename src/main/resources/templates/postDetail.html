@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Foxgraphy</title>
+    <link rel="icon" th:href="@{/file/logo2.png}" type="image/icon type">
+    <link rel="stylesheet" th:href="@{/css/postDetail.css}">
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.2.0/ckeditor5.css" />
+    <script src="https://cdn.ckeditor.com/ckeditor5/43.2.0/ckeditor5.umd.js"></script>
+    <style>
+        .error{
+            margin-top:5px;
+            margin-inside: 0;
+            margin-bottom:5px;
+            padding: 0;
+            color:red;
+            font-size: 1.3em;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+        body{
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            font-size: 12px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+        function connect() {
+            var socket = new SockJS('/gs-guide-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/notifications', function (notification) {
+                    showNotification(JSON.parse(notification.body));
+                });
+            });
+        }
+        function showNotification(notice) {
+            let check= [[${userId}]];
+            const notification= document.getElementById('notification');
+            console.log(check,notice['userId'], check === notice['userId'])
+
+            if( check === notice['userId']) {
+                notification.src='../file/notification2.png';
+            }
+        }
+        window.onload = function() {
+            connect();
+        };
+    </script>
+</head>
+<body>
+    <div id="hidden" style="display: none" class="reportForm">
+        <form >
+            <div class ="titleReport">
+                <p>Reason for reporting this content</p>
+                <img id="closedFormReport" th:src="@{/file/X.png}" alt="">
+            </div>
+            <ul>
+                <li><input type="radio" name="reason" value="Spam" checked>Spam</li>
+                <li><input type="radio" name="reason" value="Rules" >Rules Violation</li>
+                <li><input type="radio" name="reason" value="Harassment">Harassment</li>
+                <li><input type="radio" name="reason" value="Infringes copyright">Infringes copyright</li>
+                <li><input type="radio" name="reason" value="Poor Translation">Poor Translation</li>
+            </ul>
+            <textarea name="" id="contentReport" placeholder="Comment(max 255 characters)"></textarea>
+            <button name="" class="btnReport" id="sendReport"> Send </button>
+        </form>
+    </div>
+    <div th:replace="fragments/header::header"></div>
+    <div class="body">
+        <div class="sidebar" >
+            <ul>
+                <li class="vote" >
+                    <img id="voteUp" th:src="${userVote==1} ? @{../file/voteUpSelect.png} : @{../file/voteUpDefault.png}" alt="">
+                    <h1 id ="voteCount" th:text="${vote}"></h1>
+                    <img id="voteDown" th:src="${userVote==-1} ? @{../file/voteDownSelect.png} : @{../file/voteDownDefault.png}" alt="">
+                </li>
+                <li><img id="bookmark" th:src="${bookmark==0} ? @{../file/bookmark.png}: @{../file/bookmarkSelect.png}" alt=""></li>
+                <li><img class="report" th:id="'P'+${postID}" th:src="@{../file/report.png}" alt=""></li>
+            </ul>
+        </div>
+        <div class="post">
+            <div class="info">
+                <div class="left">
+                    <a th:href="@{'/user/'+${author.getUserId()}+'/post'}"><img th:src="@{/image/{filename}(filename=${avatarAuthor})}" alt="Author Image"></a>
+                    <div class="author">
+                        <div class="name">
+                            <p th:text="${nameAuthor}"></p>
+                            <button th:if="${userId!=author.getUserId()}" th:text="${stateFollow==1} ? 'following': 'follow'" id="followButton" ></button>
+                        </div>
+                        <ul class="star">
+                            <li><img th:src="@{../file/follower.png}" alt=""> <span id="countFollow" th:text="${author.getCountFollow()}"></span></li>
+                            <li><img th:src="@{../file/Blog.png}" alt=""> <span th:text="${author.getCountPost()}"></span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timePublic">
+                    <p th:text="${post.getTime()}"></p>
+                    <ul>
+                        <li><img th:src="@{../file/watch.png}" alt=""> <span th:text="${post.getCountView()}"></span></li>
+                        <li><img th:src="@{../file/comment.png}" alt=""> <span th:text="${post.getCountComment()}"></span></li>
+                        <li><img th:src="@{../file/bookmark_filled.png}" alt=""> <span th:text="${post.getCountBookmark()}"></span></li>
+                    </ul>
+                </div>
+            </div>
+            <h1 class="title" style="font-size: 2.5em;" th:text="${post.getTitle()}"></h1>
+            <div class="content" th:utext="${post.getContent()}"></div>
+            <div class="tag">
+                <ul>
+                    <li th:each="iteam : ${tags}">
+                        <span th:text="${iteam}"></span>
+                    </li>
+                </ul>
+            </div>
+            <div id ='writeComment' class="comment">
+                <img th:src="@{/image/{filename}(filename=${avatarUser})}" alt="">
+                <form action="" id="submitComment">
+                    <div  class="comment-content" id ='editor'></div>
+                    <button id="upComment" class="btn1" type="submit">Up</button>
+                </form>
+            </div>
+            <ul class="postComment" >
+                    <li th:each="comment: ${Comments}" th:if="${comment.getParentComment()}==0">
+                        <div class="userCmt">
+                            <img th:src="@{/image/{filename}(filename=${comment.getUserId()}+'.png')}" alt="">
+                            <div class="nameUserCmt">
+                                <span th:text="${comment.getUsername()}"></span>
+                                <span th:text="${comment.getTime()}"></span>
+                            </div>
+                        </div>
+                        <div  class="contentCmt" th:utext="${comment.getContent()}"></div>
+                        <div class="interaction">
+                            <button><img class="up" th:id="'U'+${comment.getCommentId()}" th:src="${comment.getStateVote()==1} ? @{/file/arrow_up_select.png}: @{/file/arrow-up_view.png}" alt=""></button>
+                            <span class="voteCnt" th:id="'state'+${comment.getStateVote()}" th:text="${comment.getCountVote()}"></span>
+                            <button><img class="down" th:id="'D'+${comment.getCommentId()}" th:src="${comment.getStateVote()==-1} ? @{/file/arrow_down_select.png}: @{/file/arrow-down_view.png}" alt=""></button>
+                            <span class="reply" th:name ="${comment.getUserId()}" th:id="${comment.getCommentId()}">Reply</span>
+                            <span class="report" th:id="'C'+${comment.getCommentId()}">Report</span>
+                        </div>
+                        <div class="writeReply"   th:id="'writeReply'+${comment.getCommentId()}">
+
+                        </div>
+                        <div class="allReply">
+                            <ul >
+                                <li class="rep" th:each="reply:${Comments}" th:if="${reply.getParentComment()}== ${comment.getCommentId()}">
+                                    <div class="userReply">
+                                        <img th:src="@{/image/{filename}(filename=${reply.getUserId()}+'.png')}" alt="">
+                                        <div class="nameUserRep">
+                                            <span th:text="${reply.getUsername()}"></span>
+                                            <span th:text="${reply.getTime()}"></span>
+                                        </div>
+                                    </div>
+                                    <div  class="contentRep" th:utext="${reply.getContent()}"></div>
+                                    <div class="interaction">
+                                        <button  ><img class="up" th:id="'U'+${reply.getCommentId()}" th:src="${reply.getStateVote()==1} ? @{/file/arrow_up_select.png}: @{/file/arrow-up_view.png}" alt=""></button>
+                                        <span class="voteCnt" th:id="'state'+${reply.getStateVote()}" th:text="${reply.getCountVote()}"></span>
+                                        <button ><img class="down" th:id="'D'+${reply.getCommentId()}" th:src="${reply.getStateVote()==-1} ? @{/file/arrow_down_select.png}: @{/file/arrow-down_view.png}" alt=""></button>
+                                        <span class="report" th:id="'C'+${reply.getCommentId()}">Report</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+            </ul>
+
+        </div>
+        <div class="index">
+        </div>
+    </div>
+    <script>
+        const {
+            BalloonEditor,
+            AccessibilityHelp,
+            Autoformat,
+            AutoImage,
+            Autosave,
+            BalloonToolbar,
+            Base64UploadAdapter,
+            BlockQuote,
+            Bold,
+            CloudServices,
+            Essentials,
+            Heading,
+            ImageBlock,
+            ImageCaption,
+            ImageInline,
+            ImageInsert,
+            ImageInsertViaUrl,
+            ImageResize,
+            ImageStyle,
+            ImageTextAlternative,
+            ImageToolbar,
+            ImageUpload,
+            Indent,
+            IndentBlock,
+            Italic,
+            Link,
+            LinkImage,
+            List,
+            ListProperties,
+            MediaEmbed,
+            Paragraph,
+            PasteFromOffice,
+            SelectAll,
+            Table,
+            TableCaption,
+            TableCellProperties,
+            TableColumnResize,
+            TableProperties,
+            TableToolbar,
+            TextTransformation,
+            TodoList,
+            Underline,
+            Undo
+        } = CKEDITOR;
+
+
+        BalloonEditor.create( document.querySelector( '#editor' ),{
+                toolbar: {
+                    items: [
+                        'undo',
+                        'redo',
+                        '|',
+                        'heading',
+                        '|',
+                        'bold',
+                        'italic',
+                        'underline',
+                        '|',
+                        'link',
+                        'insertImage',
+                        'mediaEmbed',
+                        'insertTable',
+                        'blockQuote',
+                        '|',
+                        'bulletedList',
+                        'numberedList',
+                        'todoList',
+                        'outdent',
+                        'indent'
+                    ],
+                    shouldNotGroupWhenFull: false
+                },
+                plugins: [
+                    AccessibilityHelp,
+                    Autoformat,
+                    AutoImage,
+                    Autosave,
+                    BalloonToolbar,
+                    Base64UploadAdapter,
+                    BlockQuote,
+                    Bold,
+                    CloudServices,
+                    Essentials,
+                    Heading,
+                    ImageBlock,
+                    ImageCaption,
+                    ImageInline,
+                    ImageInsert,
+                    ImageInsertViaUrl,
+                    ImageResize,
+                    ImageStyle,
+                    ImageTextAlternative,
+                    ImageToolbar,
+                    ImageUpload,
+                    Indent,
+                    IndentBlock,
+                    Italic,
+                    Link,
+                    LinkImage,
+                    List,
+                    ListProperties,
+                    MediaEmbed,
+                    Paragraph,
+                    PasteFromOffice,
+                    SelectAll,
+                    Table,
+                    TableCaption,
+                    TableCellProperties,
+                    TableColumnResize,
+                    TableProperties,
+                    TableToolbar,
+                    TextTransformation,
+                    TodoList,
+                    Underline,
+                    Undo
+                ],
+                balloonToolbar: ['bold', 'italic', '|', 'link', 'insertImage', '|', 'bulletedList', 'numberedList'],
+                heading: {
+                    options: [
+                        {
+                            model: 'paragraph',
+                            title: 'Paragraph',
+                            class: 'ck-heading_paragraph'
+                        },
+                        {
+                            model: 'heading1',
+                            view: 'h1',
+                            title: 'Heading 1',
+                            class: 'ck-heading_heading1'
+                        },
+                        {
+                            model: 'heading2',
+                            view: 'h2',
+                            title: 'Heading 2',
+                            class: 'ck-heading_heading2'
+                        },
+                        {
+                            model: 'heading3',
+                            view: 'h3',
+                            title: 'Heading 3',
+                            class: 'ck-heading_heading3'
+                        },
+                        {
+                            model: 'heading4',
+                            view: 'h4',
+                            title: 'Heading 4',
+                            class: 'ck-heading_heading4'
+                        },
+                        {
+                            model: 'heading5',
+                            view: 'h5',
+                            title: 'Heading 5',
+                            class: 'ck-heading_heading5'
+                        },
+                        {
+                            model: 'heading6',
+                            view: 'h6',
+                            title: 'Heading 6',
+                            class: 'ck-heading_heading6'
+                        }
+                    ]
+                },
+                image: {
+                    toolbar: [
+                        'toggleImageCaption',
+                        'imageTextAlternative',
+                        '|',
+                        'imageStyle:inline',
+                        'imageStyle:wrapText',
+                        'imageStyle:breakText',
+                        '|',
+                        'resizeImage'
+                    ]
+                },
+                link: {
+                    addTargetToExternalLinks: true,
+                    defaultProtocol: 'https://',
+                    decorators: {
+                        toggleDownloadable: {
+                            mode: 'manual',
+                            label: 'Downloadable',
+                            attributes: {
+                                download: 'file'
+                            }
+                        }
+                    }
+                },
+                list: {
+                    properties: {
+                        styles: true,
+                        startIndex: true,
+                        reversed: true
+                    }
+                },
+                placeholder: 'Type or paste your content here!',
+                table: {
+                    contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+                }
+            })
+            .then( editor => {
+                editorInstance = editor;  // Gán editor vào biến để dùng sau
+            })
+            .catch( /* ... */ );
+
+    </script>
+<!--    js cho tương tác ở sidebar-->
+    <script type="text/javascript">
+        const voteUp = document.getElementById("voteUp");
+        const voteDown = document.getElementById("voteDown");
+        const voteCount = document.getElementById("voteCount");
+        let currentVote = parseInt([[${vote}]]);
+        let userVote = parseInt([[${userVote}]]); // 0: chưa vote, 1: upvote, -1: downvote
+        // Các icon khi được chọn và không được chọn
+        const upvoteSelectedSrc = "../file/voteUpSelect.png";
+        const upvoteDefaultSrc = "../file/voteUpDefault.png";
+        const downvoteSelectedSrc = "../file/voteDownSelect.png";
+        const downvoteDefaultSrc = "../file/voteDownDefault.png";
+        // Hàm để cập nhật UI dựa trên trạng thái vote
+        function updateVoteUI() {
+            // Nếu người dùng đã chọn upvote
+            if (userVote === 1) {
+                voteUp.src = upvoteSelectedSrc;
+                voteDown.src = downvoteDefaultSrc;
+            }
+            // Nếu người dùng đã chọn downvote
+            else if (userVote === -1) {
+                voteUp.src = upvoteDefaultSrc;
+                voteDown.src = downvoteSelectedSrc;
+            }
+            // Nếu người dùng bỏ chọn vote
+            else {
+                voteUp.src = upvoteDefaultSrc;
+                voteDown.src = downvoteDefaultSrc;
+            }
+        }
+        // Sự kiện click cho nút upvote
+        voteUp.addEventListener("click", function() {
+            // Nếu người dùng đã upvote, nhấn lại để bỏ upvote
+            if (userVote === 1) {
+                currentVote -= 1;
+                userVote = 0;
+            }
+            // Nếu người dùng chưa vote hoặc đã downvote, thì nhấn để upvote
+            else {
+                if (userVote === -1) {
+                    currentVote += 2;
+                } else {
+                    currentVote += 1;
+                }
+                userVote = 1;
+            }
+            if(currentVote %10 ===0 && currentVote !=0 ){
+                sendNotification(data.postId,[[${post.getUserId()}]],'Tổng số số vote cho bài viết của bạn là '+currentVote);
+            }
+            voteCount.textContent = currentVote;  // Cập nhật số vote trên UI
+            updateVoteUI();
+            sendInteractionRequest('up',-1);
+        });
+        // Sự kiện click cho nút downvote
+        voteDown.addEventListener("click", function() {
+            if (userVote === -1) {
+                currentVote += 1;
+                userVote = 0;
+            }
+            else {
+                if (userVote === 1) {
+                    currentVote -= 2;
+                } else {
+                    currentVote -= 1;
+                }
+                userVote = -1;
+            }
+
+            voteCount.textContent = currentVote;  // Cập nhật số vote trên UI
+            updateVoteUI();  // Cập nhật icon
+            sendInteractionRequest('down',-1);  // Gửi request lên server
+        });
+        // Hàm gửi request lên server
+        function sendInteractionRequest(Type,x) {
+            const data = {
+                type: Type, // 'up' hoặc 'down'
+                commentId:x,
+                postId: [[${postID}]],
+                userId: [[${userId}]]
+            };
+
+            fetch('/api/vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.statusText)
+                .then(data => {
+                    console.log("Server response:", data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
+        const bookmark= document.getElementById("bookmark");
+        let stateBookmark=  [[${bookmark}]];
+        const bookmarkDefault= "../file/bookmark.png";
+        const bookmarkSelect= "../file/bookmarkSelect.png";
+        function updateBookmarkUI(){
+            if(stateBookmark === 1){
+                bookmark.src= bookmarkSelect;
+            }
+            else bookmark.src= bookmarkDefault;
+        }
+        bookmark.addEventListener("click",function(){
+            if(stateBookmark === 1 ) stateBookmark=0;
+            else stateBookmark=1;
+            updateBookmarkUI();
+            sendInteractionRequest('bookmark');
+        });
+    </script>
+<!--    js cho viết bình luận-->
+    <script type="text/javascript">
+        document.getElementById('submitComment').addEventListener('submit', function(event) {
+            // event.preventDefault();
+
+            const comment = document.getElementById('editor');
+            let content = editorInstance.getData();
+            console.log(content)
+            comment.setAttribute('value','');
+            let data = {
+                parentComment: 0,
+                content: content,
+                postId:[[${postID}]],
+                userId:[[${userId}]],
+                username:'[[${username}]]'
+            };
+            console.log(data)
+            let type ='[[${post.getType()}]]'
+            let msg =""
+            if(type ===  'post')
+                msg= '[[${username}]]'+ ' commented your post'
+            else msg='[[${username}]]'+ ' answered your question'
+            let author = '[[${authorID}]]'
+            if( parseInt(author) !== data.userId)
+                sendNotification(data.postId,[[${post.getUserId()}]],msg)
+            // Gửi dữ liệu về server bằng Fetch API
+            fetch('/createCmt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementsByClassName("ck-content").innerHTML = "";
+
+                    console.log(data)
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                })
+
+        });
+
+    </script>
+<!--    js đóng mở và viết reply-->
+    <script type ="text/javascript">
+        // đóng mở chế độ reply
+        const replyBtn = document.getElementsByClassName('reply')
+        let stateReply=[]
+        for (let i = 0; i < replyBtn.length; i++)
+            stateReply[i]=0;
+        for (let i = 0; i < replyBtn.length; i++) {
+            replyBtn[i].addEventListener('click',() => {
+                stateReply[i]= (stateReply[i]+1)%2;
+
+                const writeReply= document.getElementById('writeReply'+String(replyBtn[i].getAttribute('id')));
+                if(stateReply[i] === 1){
+                    let id ='editor'+String(replyBtn[i].getAttribute('id'))
+                    writeReply.innerHTML="                <form action=\"\" id=\"submitReply\">\n" +
+                        "                    <div  class=\"comment-content\" id ="+id+"></div>\n" +
+                        "                    <button id=\"upReply\" class=\"btn1\" type=\"submit\">Up</button>\n" +
+                        "                </form>";
+                    BalloonEditor.create( document.querySelector( '#'+id),{
+                        toolbar: {
+                            items: [
+                                'undo',
+                                'redo',
+                                '|',
+                                'heading',
+                                '|',
+                                'bold',
+                                'italic',
+                                'underline',
+                                '|',
+                                'link',
+                                'insertImage',
+                                'mediaEmbed',
+                                'insertTable',
+                                'blockQuote',
+                                '|',
+                                'bulletedList',
+                                'numberedList',
+                                'todoList',
+                                'outdent',
+                                'indent'
+                            ],
+                            shouldNotGroupWhenFull: false
+                        },
+                        plugins: [
+                            AccessibilityHelp,
+                            Autoformat,
+                            AutoImage,
+                            Autosave,
+                            BalloonToolbar,
+                            Base64UploadAdapter,
+                            BlockQuote,
+                            Bold,
+                            CloudServices,
+                            Essentials,
+                            Heading,
+                            ImageBlock,
+                            ImageCaption,
+                            ImageInline,
+                            ImageInsert,
+                            ImageInsertViaUrl,
+                            ImageResize,
+                            ImageStyle,
+                            ImageTextAlternative,
+                            ImageToolbar,
+                            ImageUpload,
+                            Indent,
+                            IndentBlock,
+                            Italic,
+                            Link,
+                            LinkImage,
+                            List,
+                            ListProperties,
+                            MediaEmbed,
+                            Paragraph,
+                            PasteFromOffice,
+                            SelectAll,
+                            Table,
+                            TableCaption,
+                            TableCellProperties,
+                            TableColumnResize,
+                            TableProperties,
+                            TableToolbar,
+                            TextTransformation,
+                            TodoList,
+                            Underline,
+                            Undo
+                        ],
+                        balloonToolbar: ['bold', 'italic', '|', 'link', 'insertImage', '|', 'bulletedList', 'numberedList'],
+                        heading: {
+                            options: [
+                                {
+                                    model: 'paragraph',
+                                    title: 'Paragraph',
+                                    class: 'ck-heading_paragraph'
+                                },
+                                {
+                                    model: 'heading1',
+                                    view: 'h1',
+                                    title: 'Heading 1',
+                                    class: 'ck-heading_heading1'
+                                },
+                                {
+                                    model: 'heading2',
+                                    view: 'h2',
+                                    title: 'Heading 2',
+                                    class: 'ck-heading_heading2'
+                                },
+                                {
+                                    model: 'heading3',
+                                    view: 'h3',
+                                    title: 'Heading 3',
+                                    class: 'ck-heading_heading3'
+                                },
+                                {
+                                    model: 'heading4',
+                                    view: 'h4',
+                                    title: 'Heading 4',
+                                    class: 'ck-heading_heading4'
+                                },
+                                {
+                                    model: 'heading5',
+                                    view: 'h5',
+                                    title: 'Heading 5',
+                                    class: 'ck-heading_heading5'
+                                },
+                                {
+                                    model: 'heading6',
+                                    view: 'h6',
+                                    title: 'Heading 6',
+                                    class: 'ck-heading_heading6'
+                                }
+                            ]
+                        },
+                        image: {
+                            toolbar: [
+                                'toggleImageCaption',
+                                'imageTextAlternative',
+                                '|',
+                                'imageStyle:inline',
+                                'imageStyle:wrapText',
+                                'imageStyle:breakText',
+                                '|',
+                                'resizeImage'
+                            ]
+                        },
+                        link: {
+                            addTargetToExternalLinks: true,
+                            defaultProtocol: 'https://',
+                            decorators: {
+                                toggleDownloadable: {
+                                    mode: 'manual',
+                                    label: 'Downloadable',
+                                    attributes: {
+                                        download: 'file'
+                                    }
+                                }
+                            }
+                        },
+                        list: {
+                            properties: {
+                                styles: true,
+                                startIndex: true,
+                                reversed: true
+                            }
+                        },
+                        placeholder: 'Type or paste your content here!',
+                        table: {
+                            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+                        }
+                    })
+                        .then( editor => {
+                            editorRep = editor;  // Gán editor vào biến để dùng sau
+                        } )
+                        .catch( /* ... */ );
+
+                    let Dst=parseInt(replyBtn[i].getAttribute('name'))
+                    document.getElementById("submitReply").addEventListener("submit",() =>{
+                        console.log("hello world")
+                        let content =editorRep.getData();
+
+                        let data = {
+                            parentComment: replyBtn[i].getAttribute('id'),
+                            content: content,
+                            postId:[[${postID}]],
+                            userId:[[${userId}]],
+                            username:'[[${username}]]'
+                        };
+                        let type ='[[${post.getType()}]]';
+                        let msg =""
+                            msg= '[[${username}]]'+ ' reply your comment'
+                        let author = '[[${authorID}]]'
+                        console.log(parseInt(author),data.userId,parseInt(author) !== data.userId)
+                        if( Dst !== data.userId)
+                            sendNotification(data.postId,Dst,msg)
+                        fetch('/createCmt', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                            .then(response => response.text())
+                            .then(data => {
+
+                                console.log(data)
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            })
+                    });
+                }
+                else {
+                    writeReply.innerHTML="";
+                }
+            })
+        }
+    </script>
+<!--    js tương tác vote comment và reply-->
+    <script type ="text/javascript">
+        //
+        const upBtn= document.getElementsByClassName('up');
+        const numVote =document.getElementsByClassName('voteCnt');
+        const downBtn=document.getElementsByClassName('down');
+        let stateVote= []
+        let countVote = []
+        for(let i=0;i<upBtn.length;i++){
+            const num= numVote[i];
+            let state = num.getAttribute('id')
+            state= state.substring(5,stateVote.length)
+            stateVote[i]=parseInt(state);
+            countVote[i]=parseInt(num.textContent);
+        }
+        const upvoteSelectedSrc2 = "../file/arrow_up_select.png";
+        const upvoteDefaultSrc2 = "../file/arrow-up_view.png";
+        const downvoteSelectedSrc2 = "../file/arrow_down_select.png";
+        const downvoteDefaultSrc2 = "../file/arrow-down_view.png";
+        for(let i=0;i<upBtn.length;i++){
+            const up= upBtn[i];
+            const num= numVote[i];
+            const down =downBtn[i];
+            let id =up.getAttribute('id');
+            id= id.substring(1,id.length)
+            function updateVoteCommentUI() {
+                // Nếu người dùng đã chọn upvote
+                if (stateVote[i] === 1) {
+                    up.src = upvoteSelectedSrc2;
+                    down.src = downvoteDefaultSrc2;
+                }
+                // Nếu người dùng đã chọn downvote
+                else if (stateVote[i] === -1) {
+                    up.src = upvoteDefaultSrc2;
+                    down.src = downvoteSelectedSrc2;
+                }
+                // Nếu người dùng bỏ chọn vote
+                else {
+                    up.src = upvoteDefaultSrc2;
+                    down.src = downvoteDefaultSrc2;
+                }
+            }
+            up.addEventListener('click',function (){
+                if (stateVote[i] === 1) {
+                    countVote[i] -= 1;
+                    stateVote[i] = 0;
+                }
+                // Nếu người dùng chưa vote hoặc đã downvote, thì nhấn để upvote
+                else {
+                    if (stateVote[i] === -1) {
+                        countVote[i] += 2;
+                    } else {
+                        countVote[i] += 1;
+                    }
+                    stateVote[i] = 1;
+                }
+                num.textContent = countVote[i];  // Cập nhật số vote trên UI
+                updateVoteCommentUI();
+                sendInteractionRequest('up',parseInt(id));
+            });
+            down.addEventListener('click',function (){
+                if (stateVote[i] === -1) {
+                    countVote[i] += 1;
+                    stateVote[i] = 0;
+                }
+                else {
+                    if (stateVote[i] === 1) {
+                        countVote[i] -= 2;
+                    } else {
+                        countVote[i] -= 1;
+                    }
+                    stateVote[i] = -1;
+                }
+                num.textContent = countVote[i];  // Cập nhật số vote trên UI
+                updateVoteCommentUI();
+                sendInteractionRequest('down',parseInt(id));
+            });
+        }
+    </script>
+<!--    script sử lý nút report-->
+    <script type ="text/javascript">
+        // cập nhật UI
+        const report =document.getElementsByClassName('report');
+        const formReport= document.getElementById('hidden');
+        const sendReport =document.getElementById('sendReport')
+        for(let i=0;i <report.length;i++){
+            report[i].addEventListener("click",function (){
+                if(formReport.style.display ==='none')
+                {
+                    formReport.style.display='flex';
+                    sendReport.name =report[i].getAttribute('id')
+                }
+            });
+        }
+        const closeForm =document.getElementById("closedFormReport")
+        closeForm.addEventListener('click', ()=> {
+            if(formReport.style.display ==='flex')
+            {
+                formReport.style.display='none';
+                sendReport.name='';
+            }
+        })
+        // gửi dữ liệu report về server
+        sendReport.addEventListener("click",(event) =>{
+            event.preventDefault();
+            let data = {
+                postId:-1,
+                commentId:-1,
+                reason: document.querySelector('input[name="reason"]:checked').value,
+                content: document.getElementById('contentReport').value
+            };
+            const typeReport =sendReport.getAttribute('name');
+            if(typeReport.charAt(0) ==='P'){
+                 data.postId=parseInt(typeReport.substring(1));
+            }
+            else{
+                data.commentId= parseInt(typeReport.substring(1));
+            }
+            console.log(data)
+            fetch('/sendReport', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.text())
+                .then(data => {
+                    if(formReport.style.display ==='flex')
+                    {
+                        formReport.style.display='none';
+                        sendReport.name='';
+                    }
+                    alert("send report success")
+
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                })
+        });
+
+    </script>
+<!--    script xử lý follow-->
+    <script>
+        const follow =document.getElementById('followButton');
+        const countFollow= document.getElementById('countFollow')
+        let stateFollow =[[${stateFollow}]];
+        let cnt=[[${author.getCountFollow()}]]
+        follow.addEventListener('click',(event) =>{
+           event.preventDefault();
+           stateFollow= (stateFollow+1)%2;
+            let data ={
+                userIdSrc:[[${userId}]],
+                userIdDst:[[${authorID}]],
+            }
+           if(stateFollow === 0){
+               cnt--;
+               countFollow.textContent= cnt;
+               follow.textContent="follow";
+               fetch('/follow/delete', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify(data)
+               })
+                   .then(response => response.statusText)
+                   .then(data => {
+                       console.log("Server response:", data);
+                   })
+                   .catch((error) => {
+                       console.error('Error:', error);
+                   });
+           }
+           else {
+               cnt++
+               countFollow.textContent=cnt;
+               follow.textContent = "following";
+               fetch('/follow/insert', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json'
+                   },
+                   body: JSON.stringify(data)
+               })
+                   .then(response => response.statusText)
+                   .then(data => {
+                       console.log("Server response:", data);
+                   })
+                   .catch((error) => {
+                       console.error('Error:', error);
+                   });
+           }
+        });
+
+    </script>
+<!--   gửi thông báo-->
+    <script>
+        function sendNotification(postId, userId, message) {
+            const notification = {
+                postId: postId,
+                userId: userId,
+                message: message
+            };
+            console.log(notification)
+            fetch('/notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(notification)
+            })
+                .then(response => response.text())
+                .then(data => console.log(data));
+        }
+
+    </script>
+
+</body>
+</html>

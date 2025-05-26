@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{admin/fragments/head :: head}"></head>
+<body class="hold-transition skin-blue sidebar-mini">
+<!-- Site wrapper -->
+<div class="wrapper">
+
+    <div th:replace="~{admin/fragments/header :: header}"></div>
+    <!-- =============================================== -->
+
+    <!-- Left side column. contains the sidebar -->
+    <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+    <!-- =============================================== -->
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                Manage Reports
+
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Admin</a></li>
+                <li class="active">Reports</li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <head>
+            <title>Content</title>
+        </head>
+        <body>
+        <div class="content">
+            <h3>Reason</h3>
+            <p th:text="${report.content}">content goes here...</p>
+            <div th:if="${type}=='comment'" >
+                <h3>Content of comment</h3>
+                <p th:utext="${comment.content}"></p>
+            </div>
+            <div th:if="${type}=='post'">
+               <h3>Title</h3>
+                <h4 th:text = "${post.title}"></h4>
+                <h3>Content</h3>
+                <div th:utext="${post.content}">
+                </div>
+            </div>
+
+        </div>
+        </body>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <footer class="main-footer">
+
+    </footer>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery 3 -->
+<div th:replace="~{admin/fragments/script :: script}"></div>
+</body>
+</html>

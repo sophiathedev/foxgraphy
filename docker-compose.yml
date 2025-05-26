@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_DATABASE: your_database_name
+      MYSQL_USER: your_db_username
+      MYSQL_PASSWORD: your_db_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - java_btl:/var/lib/mysql
+    networks:
+      - java_btl_network
+volumes:
+  java_btl:
+
+networks:
+  java_btl_network:
+    driver: bridge

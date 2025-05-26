@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Foxgraphy</title>
+    <link rel="icon" th:href="@{/file/logo2.png}" type="image/icon type">
+    <link rel="stylesheet" th:href="@{/css/create.css}">
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.1.0/ckeditor5.css">
+    <script src="https://cdn.ckeditor.com/ckeditor5/43.1.0/ckeditor5.umd.js"></script>
+    <style>
+        .error{
+            margin-top:5px;
+            margin-inside: 0;
+            margin-bottom:5px;
+            padding: 0;
+            color:red;
+            font-size: 1.3em;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+        function connect() {
+            var socket = new SockJS('/gs-guide-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/notifications', function (notification) {
+                    showNotification(JSON.parse(notification.body));
+                });
+            });
+        }
+        function showNotification(notice) {
+            let check= [[${userId}]];
+            const notification= document.getElementById('notification');
+            console.log(check,notice['userId'], check === notice['userId'])
+
+            if( check === notice['userId']) {
+                notification.src='../file/notification2.png';
+            }
+        }
+        window.onload = function() {
+            connect();
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+        body{
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="fragments/header::header"></div>
+    <form class="form" th:action="@{/create}" th:object="${Post}" method="post" >
+        <label for='title'></label>
+        <input th:field="*{title}" th:value="${Post.getTitle()}"  id='title' type="text" placeholder="Title"/>
+        <p class="error" th:if="${missingTitle}">Missing Title</p>
+        <div class="tag">
+            <input th:field="*{tags}" th:value="${Post.getTags()}" type="text" id ='tag' placeholder="Tags">
+            <label for="tag"></label>
+            <div class="type">
+                <input th:field="*{type}" type="radio" id="Post" name="type" th:value="post" th:checked="${Post.getType()=='post'}">
+                <label for="Post">Post</label>
+                <input th:field="*{type}" type="radio" id="Question" name="type" th:value="question" th:checked="${Post.getType()=='question'}">
+                <label for="Question">Question</label>
+            </div>
+        </div>
+        <p class="error" th:if="${missingTags}">Missing Tag</p>
+        <div class="content">
+            <label for="editor"></label>
+            <textarea th:value="${Post.getContent()}" th:field="*{content}" id="editor" cols="30" rows="10">
+            </textarea>
+        </div>
+        <p class="error" th:if="${missingContent}">Missing Content</p>
+        <p style="display: none" th:text="${Post.getPostId()}"> </p>
+        <input style="display: none" th:field="*{postId}" th:value="${Post.getPostId()}" type="text"/>
+        <button type="submit">Upload</button>
+    </form>
+    <script>
+        const {
+            ClassicEditor,
+            AccessibilityHelp,
+            Alignment,
+            Autoformat,
+            AutoImage,
+            AutoLink,
+            Autosave,
+            Base64UploadAdapter,
+            BlockQuote,
+            Bold,
+            Code,
+            CodeBlock,
+            Essentials,
+            FindAndReplace,
+            FontBackgroundColor,
+            FontColor,
+            FontFamily,
+            FontSize,
+            Heading,
+            Highlight,
+            ImageBlock,
+            ImageCaption,
+            ImageInline,
+            ImageInsert,
+            ImageInsertViaUrl,
+            ImageResize,
+            ImageStyle,
+            ImageTextAlternative,
+            ImageToolbar,
+            ImageUpload,
+            Indent,
+            IndentBlock,
+            Italic,
+            Link,
+            LinkImage,
+            List,
+            ListProperties,
+            MediaEmbed,
+            Paragraph,
+            PasteFromOffice,
+            RemoveFormat,
+            SelectAll,
+            SpecialCharacters,
+            SpecialCharactersArrows,
+            SpecialCharactersCurrency,
+            SpecialCharactersEssentials,
+            SpecialCharactersLatin,
+            SpecialCharactersMathematical,
+            SpecialCharactersText,
+            Strikethrough,
+            Subscript,
+            Superscript,
+            Table,
+            TableCaption,
+            TableCellProperties,
+            TableColumnResize,
+            TableProperties,
+            TableToolbar,
+            TextTransformation,
+            TodoList,
+            Underline,
+            Undo
+        } = CKEDITOR;
+
+        ClassicEditor
+            .create( document.querySelector( '#editor' ), {
+                toolbar: {
+                    items: [
+                        'undo',
+                        'redo',
+                        '|',
+                        'findAndReplace',
+                        '|',
+                        'heading',
+                        '|',
+                        'fontSize',
+                        'fontFamily',
+                        'fontColor',
+                        'fontBackgroundColor',
+                        '|',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'strikethrough',
+                        'subscript',
+                        'superscript',
+                        'code',
+                        'removeFormat',
+                        '|',
+                        'specialCharacters',
+                        'link',
+                        'insertImage',
+                        'mediaEmbed',
+                        'insertTable',
+                        'highlight',
+                        'blockQuote',
+                        'codeBlock',
+                        '|',
+                        'alignment',
+                        '|',
+                        'bulletedList',
+                        'numberedList',
+                        'todoList',
+                        'outdent',
+                        'indent'
+                    ],
+                    shouldNotGroupWhenFull: false
+                },
+                plugins: [
+                    AccessibilityHelp,
+                    Alignment,
+                    Autoformat,
+                    AutoImage,
+                    AutoLink,
+                    Autosave,
+                    Base64UploadAdapter,
+                    BlockQuote,
+                    Bold,
+                    Code,
+                    CodeBlock,
+                    Essentials,
+                    FindAndReplace,
+                    FontBackgroundColor,
+                    FontColor,
+                    FontFamily,
+                    FontSize,
+                    Heading,
+                    Highlight,
+                    ImageBlock,
+                    ImageCaption,
+                    ImageInline,
+                    ImageInsert,
+                    ImageInsertViaUrl,
+                    ImageResize,
+                    ImageStyle,
+                    ImageTextAlternative,
+                    ImageToolbar,
+                    ImageUpload,
+                    Indent,
+                    IndentBlock,
+                    Italic,
+                    Link,
+                    LinkImage,
+                    List,
+                    ListProperties,
+                    MediaEmbed,
+                    Paragraph,
+                    PasteFromOffice,
+                    RemoveFormat,
+                    SelectAll,
+                    SpecialCharacters,
+                    SpecialCharactersArrows,
+                    SpecialCharactersCurrency,
+                    SpecialCharactersEssentials,
+                    SpecialCharactersLatin,
+                    SpecialCharactersMathematical,
+                    SpecialCharactersText,
+                    Strikethrough,
+                    Subscript,
+                    Superscript,
+                    Table,
+                    TableCaption,
+                    TableCellProperties,
+                    TableColumnResize,
+                    TableProperties,
+                    TableToolbar,
+                    TextTransformation,
+                    TodoList,
+                    Underline,
+                    Undo
+                ],
+                fontFamily: {
+                    supportAllValues: true
+                },
+                fontSize: {
+                    options: [10, 12, 14, 'default', 18, 20, 22],
+                    supportAllValues: true
+                },
+                heading: {
+                    options: [
+                        {
+                            model: 'paragraph',
+                            title: 'Paragraph',
+                            class: 'ck-heading_paragraph'
+                        },
+                        {
+                            model: 'heading1',
+                            view: 'h1',
+                            title: 'Heading 1',
+                            class: 'ck-heading_heading1'
+                        },
+                        {
+                            model: 'heading2',
+                            view: 'h2',
+                            title: 'Heading 2',
+                            class: 'ck-heading_heading2'
+                        },
+                        {
+                            model: 'heading3',
+                            view: 'h3',
+                            title: 'Heading 3',
+                            class: 'ck-heading_heading3'
+                        },
+                        {
+                            model: 'heading4',
+                            view: 'h4',
+                            title: 'Heading 4',
+                            class: 'ck-heading_heading4'
+                        },
+                        {
+                            model: 'heading5',
+                            view: 'h5',
+                            title: 'Heading 5',
+                            class: 'ck-heading_heading5'
+                        },
+                        {
+                            model: 'heading6',
+                            view: 'h6',
+                            title: 'Heading 6',
+                            class: 'ck-heading_heading6'
+                        }
+                    ]
+                },
+                image: {
+                    toolbar: [
+                        'toggleImageCaption',
+                        'imageTextAlternative',
+                        '|',
+                        'imageStyle:inline',
+                        'imageStyle:wrapText',
+                        'imageStyle:breakText',
+                        '|',
+                        'resizeImage'
+                    ]
+                },
+
+                link: {
+                    addTargetToExternalLinks: true,
+                    defaultProtocol: 'https://',
+                    decorators: {
+                        toggleDownloadable: {
+                            mode: 'manual',
+                            label: 'Downloadable',
+                            attributes: {
+                                download: 'file'
+                            }
+                        }
+                    }
+                },
+                list: {
+                    properties: {
+                        styles: true,
+                        startIndex: true,
+                        reversed: true
+                    }
+                },
+                placeholder: 'Type or paste your content here!',
+                table: {
+                    contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+                }
+            } )
+            .then( /* ... */ )
+            .catch( /* ... */ );
+    </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+body{
+  margin: 0;
+  padding:0;
+  font-size: 12px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.header{
+  background-color: black;
+  min-height: 60px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  ul{
+    margin: 0 7%;
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+    list-style: none;
+    gap:25px;
+    padding: 0;
+    li{
+      height: 100%;
+      color: white;
+      display: flex;
+      align-items: center;
+      a{
+        height: 20px;
+        display: flex;
+        align-items: center;
+        color:white;
+        text-decoration: none;
+        h2{
+          font-size: 1.8em;
+          margin-left: 30px;
+        }
+        img{
+          width: 55px;
+        }
+      }
+    }
+  }
+  .left{
+    justify-content: flex-start;
+  }
+  .right{
+    justify-content: flex-end;
+    .find{
+      display: flex;
+      align-items: center;
+      background-color: white;
+      height: 25px;
+      object-fit: cover;
+      border-radius: 5px;
+      overflow: hidden;
+      width: 250px;
+
+      img{
+        height: 25px;
+        width: 25px;
+      }
+    }
+    .icon{
+      height: 20px;
+      width: 20px;
+      cursor: pointer;
+    }
+  }
+  input{
+    height: 22px;
+    width: 220px;
+    outline: none;
+    border: none;
+    margin-left: 10px;
+  }
+  #avatar{
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* profile_user */
+
+.profile-form {
+    width: 80%;
+    padding: 80px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-form > * {
+    margin-bottom: 20px;
+}
+
+.profile-form  .avatar-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-form  .avatar-container .inner-avatar {
+    border: 1px solid black;
+    padding: 20px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-form .avatar-button {
+    border: 0;
+    padding: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    width: 100%;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    padding: 8px;
+    border: 1px solid black;
+    /* border-radius: 4px; */
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.form-row .form-group {
+    width: 48%;
+}
+/* end profile_user */
+
+.d-none {
+    display: none;
+}

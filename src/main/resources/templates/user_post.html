@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Foxgraphy</title>
+    <link rel="icon" th:href="@{/file/logo2.png}" type="image/icon type">
+    <link rel="stylesheet" th:href="@{/css/userPost.css}">
+    <style>
+        .header{
+            background-color: black;
+            min-height: 60px;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5vw;
+            box-sizing: border-box;
+            ul{
+                display: flex;
+                height: 60px;
+                flex-direction: row;
+                list-style: none;
+                gap:25px;
+                padding: 0;
+                margin:0;
+                li{
+                    height: 100%;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    a{
+                        height: 20px;
+                        display: flex;
+                        align-items: center;
+                        color:white;
+                        text-decoration: none;
+                        h2{
+                            display: flex;
+                            align-items: center;
+                            font-size: 1.8em;
+                            margin-left: 30px;
+                            margin-top:0;
+                            margin-bottom: 0;
+                        }
+                        img{
+                            width: 55px;
+                        }
+                    }
+                }
+            }
+            .left{
+                justify-content: flex-start;
+            }
+            .right{
+                justify-content: flex-end;
+                .find{
+                    display: flex;
+                    align-items: center;
+                    background-color: white;
+                    height: 25px;
+                    object-fit: cover;
+                    border-radius: 5px;
+                    overflow: hidden;
+
+                    img{
+                        height: 25px;
+                        width: 25px;
+                        display: flex;
+                        justify-content: flex-end;
+                    }
+                }
+                .icon{
+                    height: 20px;
+                    width: 20px;
+                    cursor: pointer;
+                }
+            }
+            input{
+                height: 22px;
+                width: 15vw;
+                outline: none;
+                border: none;
+                margin-left: 10px;
+            }
+            #avatar{
+                width: 30px;
+                height: 30px;
+                border-radius: 100%;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <style>
+        body{
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            font-size: 12px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+        function connect() {
+            var socket = new SockJS('/gs-guide-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/notifications', function (notification) {
+                    showNotification(JSON.parse(notification.body));
+                });
+            });
+        }
+        function showNotification(notice) {
+            let check= [[${userId}]];
+            const notification= document.getElementById('notification');
+            console.log(check,notice['userId'], check === notice['userId'])
+
+            if( check === notice['userId']) {
+                notification.src='../file/notification2.png';
+            }
+        }
+        window.onload = function() {
+            connect();
+        };
+    </script>
+</head>
+<body>
+    <div th:replace="fragments/header::header"></div>
+    <div class="body">
+        <div th:replace="fragments/info::info"></div>
+        <ul class="nav">
+            <li style="background-color: rgba(230,230,230,0.7)"><a th:href="@{'/user/'+${user2.getUserId()}+'/post'}">Post</a></li>
+            <li><a th:href="@{'/user/'+${user2.getUserId()}+'/question'}">Question</a></li>
+            <li><a th:href="@{'/user/'+${user2.getUserId()}+'/contact'}">Contact</a></li>
+        </ul>
+        <ul class="main">
+            <li th:each="post:${posts}">
+                <a th:href="'/'+${post.getPostId()}">
+                    <p th:text="${post.getTime()}"></p>
+                    <h2 th:text="${post.getTitle()}"></h2>
+                    <ul class="tags">
+                        <li th:each="tag:${post.getTags().split(',')}" th:text="${tag}"> </li>
+                    </ul>
+                    <ul class="archive">
+                        <li>
+                            <img th:src="@{/file/up_and_down.png}" alt="">
+                            <span th:text="${post.getCountVote()}"></span>
+                        </li>
+                        <li>
+                            <img th:src="@{/file/bookmark.png}" alt="">
+                            <span th:text="${post.getCountVote()}"></span>
+                        </li>
+                        <li>
+                            <img th:src="@{/file/cmt.png}" alt="">
+                            <span th:text="${post.getCountComment()}"></span>
+                        </li>
+                    </ul>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const follow =document.getElementById('followButton');
+        const countFollow= document.getElementById('countFollow')
+        let stateFollow =[[${stateFollow}]];
+        let cnt=[[${user2.getCountFollow()}]]
+        follow.addEventListener('click',(event) =>{
+            event.preventDefault();
+            stateFollow= (stateFollow+1)%2;
+            let data ={
+                userIdSrc:[[${user.getUserId()}]],
+                userIdDst:[[${user2.getUserId()}]],
+            }
+            if(stateFollow === 0){
+                cnt--;
+                countFollow.textContent=  cnt.toString();
+                follow.textContent="follow";
+                fetch('/follow/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.statusText)
+                    .then(data => {
+                        console.log("Server response:", data);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+            else {
+                cnt++
+                countFollow.textContent=cnt.toString();
+                follow.textContent = "following";
+                fetch('/follow/insert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.statusText)
+                    .then(data => {
+                        console.log("Server response:", data);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+        });
+
+    </script>
+</body>
+</html>
